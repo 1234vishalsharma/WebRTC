@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useCallback } from 'react';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../index.css'
 import {useSocket} from '../Providers/SocketProvider';
 function Lobby() {
@@ -6,12 +9,24 @@ function Lobby() {
   const [username,setUsername] = useState();
   const [room,setRoom] = useState();
   const socket = useSocket();
+  const navigate = useNavigate();
+
+  const handelRoomJoin = useCallback((data) =>{
+    const {username,room} = data;
+    navigate(`/room/${room}`);
+  });
+
+  useEffect( () =>{
+    socket.on('room:join' , handelRoomJoin);
+    return ()=> {
+      socket.off('roon:join' , handelRoomJoin);
+    }
+  } , [socket , handelRoomJoin]);
+    
 
   const handelSubmit = (e) => {
     e.preventDefault();
-    socket.emit("room:join" , {
-      username , room
-    })
+    socket.emit("room:join" , {username , room});
   }
 
 
